@@ -13,21 +13,12 @@ namespace MyBhapticsTactsuit
         public bool systemInitialized = false;
         // Event to start and stop the heartbeat thread
         private static ManualResetEvent HeartBeat_mrse = new ManualResetEvent(false);
+        private static ManualResetEvent GrabUsedRight_mrse = new ManualResetEvent(false);
+        private static ManualResetEvent GrabUsedLeft_mrse = new ManualResetEvent(false);
         // dictionary of all feedback patterns found in the bHaptics directory
         public Dictionary<String, FileInfo> FeedbackMap = new Dictionary<String, FileInfo>();
 
         private static bHaptics.RotationOption defaultRotationOption = new bHaptics.RotationOption(0.0f, 0.0f);
-
-        public void HeartBeatFunc()
-        {
-            while (true)
-            {
-                // Check if reset event is active
-                HeartBeat_mrse.WaitOne();
-                bHaptics.SubmitRegistered("HeartBeat");
-                Thread.Sleep(600);
-            }
-        }
 
         public TactsuitVR()
         {
@@ -37,9 +28,12 @@ namespace MyBhapticsTactsuit
                 suitDisabled = false;
             }
             RegisterAllTactFiles();
-            LOG("Starting HeartBeat thread...");
             Thread HeartBeatThread = new Thread(HeartBeatFunc);
             HeartBeatThread.Start();
+            Thread GrabUsedRightThread = new Thread(GrabUsedRightFunc);
+            GrabUsedRightThread.Start();
+            Thread GrabUsedLeftThread = new Thread(GrabUsedLeftFunc);
+            GrabUsedLeftThread.Start();
         }
 
         public void LOG(string logStr)
@@ -48,8 +42,6 @@ namespace MyBhapticsTactsuit
             MelonLogger.Msg(logStr);
 #pragma warning restore CS0618
         }
-
-
 
         void RegisterAllTactFiles()
         {
@@ -101,6 +93,41 @@ namespace MyBhapticsTactsuit
             bHaptics.SubmitRegistered(key, key, scaleOption, rotationOption);
         }
 
+        public void HeartBeatFunc()
+        {
+            while (true)
+            {
+                // Check if reset event is active
+                HeartBeat_mrse.WaitOne();
+                bHaptics.SubmitRegistered("HeartBeat");
+                Thread.Sleep(600);
+            }
+        }
+
+        public void GrabUsedLeftFunc()
+        {
+            while (true)
+            {
+                // Check if reset event is active
+                GrabUsedLeft_mrse.WaitOne();
+                bHaptics.SubmitRegistered("GrabVest_L");
+                bHaptics.SubmitRegistered("GrabArms_L");
+                Thread.Sleep(1000);
+            }
+        }
+
+        public void GrabUsedRightFunc()
+        {
+            while (true)
+            {
+                // Check if reset event is active
+                GrabUsedRight_mrse.WaitOne();
+                bHaptics.SubmitRegistered("GrabVest_R");
+                bHaptics.SubmitRegistered("GrabArms_R");
+                Thread.Sleep(1000);
+            }
+        }
+
         public void StartHeartBeat()
         {
             HeartBeat_mrse.Set();
@@ -109,6 +136,26 @@ namespace MyBhapticsTactsuit
         public void StopHeartBeat()
         {
             HeartBeat_mrse.Reset();
+        }
+
+        public void StartGrabUsedLeft()
+        {
+            GrabUsedLeft_mrse.Set();
+        }
+
+        public void StopGrabUsedLeft()
+        {
+            GrabUsedLeft_mrse.Reset();
+        }
+
+        public void StartGrabUsedRight()
+        {
+            GrabUsedRight_mrse.Set();
+        }
+
+        public void StopGrabUsedRight()
+        {
+            GrabUsedRight_mrse.Reset();
         }
 
         public bool IsPlaying(String effect)
@@ -135,6 +182,8 @@ namespace MyBhapticsTactsuit
             // Yes, looks silly here, but if you have several threads like this, this is
             // very useful when the player dies or starts a new level
             StopHeartBeat();
+            StopGrabUsedLeft();
+            StopGrabUsedRight();
         }
 
 

@@ -5,6 +5,7 @@ using HarmonyLib;
 using MyBhapticsTactsuit;
 using Game.Scripts.GrapplingHook;
 using Game.Scripts.Player;
+using Game.Scripts.Death;
 
 namespace YupitergradBhaptics
 {
@@ -28,7 +29,46 @@ namespace YupitergradBhaptics
 
                 string hand = (__instance.name == "GraplingHookLeft") ? "L" : "R";
                 tactsuitVr.PlaybackHaptics("GrapplingVest_"+hand);
-                tactsuitVr.PlaybackHaptics("Grappling_"+hand);
+                tactsuitVr.PlaybackHaptics("GrapplingArms_"+hand);
+            }
+        }
+        
+        [HarmonyPatch(typeof(GrapplingHook), "GrabUsed", new Type[] { })]
+        public class bhaptics_GrabUsed
+        {
+            [HarmonyPostfix]
+            public static void Postfix(GrapplingHook __instance)
+            {
+                if (tactsuitVr.suitDisabled) return;
+
+                if (__instance.name == "GraplingHookLeft")
+                {
+                    tactsuitVr.StartGrabUsedLeft();
+                }
+                else
+                {
+                    tactsuitVr.StartGrabUsedRight();
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(GrapplingHook), "GrabUnused", new Type[] { })]
+        public class bhaptics_GrabUnused
+        {
+            [HarmonyPostfix]
+            public static void Postfix(GrapplingHook __instance)
+            {
+                if (tactsuitVr.suitDisabled) return;
+
+                tactsuitVr.LOG("GRAB UNUSED" + __instance.name);
+                if (__instance.name == "GraplingHookLeft")
+                {
+                    tactsuitVr.StopGrabUsedLeft();
+                }
+                else
+                {
+                    tactsuitVr.StopGrabUsedRight();
+                }
             }
         }
 
@@ -43,9 +83,21 @@ namespace YupitergradBhaptics
                 if (__instance.Velocity.magnitude > 10f)
                 {
                     float intensity = (float)Math.Log10((double)(__instance.Velocity.magnitude - 10));
-                    tactsuitVr.LOG("INTENSITY "+ intensity);
                     tactsuitVr.PlaybackHaptics("ImpactShort", intensity);
                 }
+            }
+        }
+        
+
+        [HarmonyPatch(typeof(DeathReasonDisplay), "SetDeathReason")]
+        public class bhaptics_SetDeathReason
+        {
+            [HarmonyPostfix]
+            public static void Postfix()
+            {
+                if (tactsuitVr.suitDisabled) return;
+
+                tactsuitVr.PlaybackHaptics("Death");
             }
         }
     }
