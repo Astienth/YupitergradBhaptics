@@ -6,8 +6,6 @@ using MyBhapticsTactsuit;
 using Game.Scripts.GrapplingHook;
 using Game.Scripts.Player;
 using Game.Scripts.Death;
-using Game.Scripts.GrapplingHook.StateMachine.States;
-using Game.Scripts.GrapplingHook.StateMachine.Data;
 
 namespace YupitergradBhaptics
 {
