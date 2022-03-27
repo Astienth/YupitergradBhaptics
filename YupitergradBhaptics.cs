@@ -87,7 +87,6 @@ namespace YupitergradBhaptics
                 }
             }
         }
-        
 
         [HarmonyPatch(typeof(DeathReasonDisplay), "SetDeathReason")]
         public class bhaptics_SetDeathReason
@@ -100,5 +99,17 @@ namespace YupitergradBhaptics
                 tactsuitVr.PlaybackHaptics("Death");
             }
         }
+
+       /* [HarmonyPatch(typeof(WiggleController), "WiggleAttached")]
+        public class bhaptics_Swing
+        {
+            [HarmonyPostfix]
+            public static void Postfix()
+            {
+                if (tactsuitVr.suitDisabled) return;
+
+                tactsuitVr.PlaybackHaptics("Death");
+            }
+        }*/
     }
 }
