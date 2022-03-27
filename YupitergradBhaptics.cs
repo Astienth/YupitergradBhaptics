@@ -6,6 +6,8 @@ using MyBhapticsTactsuit;
 using Game.Scripts.GrapplingHook;
 using Game.Scripts.Player;
 using Game.Scripts.Death;
+using Game.Scripts.GrapplingHook.StateMachine.States;
+using Game.Scripts.GrapplingHook.StateMachine.Data;
 
 namespace YupitergradBhaptics
 {
@@ -60,7 +62,6 @@ namespace YupitergradBhaptics
             {
                 if (tactsuitVr.suitDisabled) return;
 
-                tactsuitVr.LOG("GRAB UNUSED" + __instance.name);
                 if (__instance.name == "GraplingHookLeft")
                 {
                     tactsuitVr.StopGrabUsedLeft();
@@ -68,6 +69,25 @@ namespace YupitergradBhaptics
                 else
                 {
                     tactsuitVr.StopGrabUsedRight();
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(GrapplingHook), "FixedUpdate")]
+        public class bhaptics_FixedUpdate
+        {
+            [HarmonyPostfix]
+            public static void Postfix(GrapplingHook __instance)
+            {
+                if (tactsuitVr.suitDisabled) return;
+
+                if (__instance.m_playerPhysics.Velocity.magnitude > 20f)
+                {
+                    tactsuitVr.StartThrust();
+                }
+                else
+                {
+                    tactsuitVr.StopThrust();
                 }
             }
         }
@@ -99,17 +119,5 @@ namespace YupitergradBhaptics
                 tactsuitVr.PlaybackHaptics("Death");
             }
         }
-
-       /* [HarmonyPatch(typeof(WiggleController), "WiggleAttached")]
-        public class bhaptics_Swing
-        {
-            [HarmonyPostfix]
-            public static void Postfix()
-            {
-                if (tactsuitVr.suitDisabled) return;
-
-                tactsuitVr.PlaybackHaptics("Death");
-            }
-        }*/
     }
 }

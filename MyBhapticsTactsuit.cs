@@ -14,7 +14,8 @@ namespace MyBhapticsTactsuit
         // Event to start and stop the heartbeat thread
         private static ManualResetEvent HeartBeat_mrse = new ManualResetEvent(false);
         private static ManualResetEvent GrabUsedRight_mrse = new ManualResetEvent(false);
-        private static ManualResetEvent GrabUsedLeft_mrse = new ManualResetEvent(false);
+        private static ManualResetEvent GrabUsedLeft_mrse = new ManualResetEvent(false); 
+        private static ManualResetEvent Thrust_mrse = new ManualResetEvent(false);
         // dictionary of all feedback patterns found in the bHaptics directory
         public Dictionary<String, FileInfo> FeedbackMap = new Dictionary<String, FileInfo>();
 
@@ -34,6 +35,8 @@ namespace MyBhapticsTactsuit
             GrabUsedRightThread.Start();
             Thread GrabUsedLeftThread = new Thread(GrabUsedLeftFunc);
             GrabUsedLeftThread.Start();
+            Thread ThrustThread = new Thread(ThrustFunc);
+            ThrustThread.Start();
         }
 
         public void LOG(string logStr)
@@ -128,6 +131,17 @@ namespace MyBhapticsTactsuit
             }
         }
 
+        public void ThrustFunc()
+        {
+            while (true)
+            {
+                // Check if reset event is active
+                Thrust_mrse.WaitOne();
+                bHaptics.SubmitRegistered("Thrust");
+                Thread.Sleep(1000);
+            }
+        }
+
         public void StartHeartBeat()
         {
             HeartBeat_mrse.Set();
@@ -158,6 +172,16 @@ namespace MyBhapticsTactsuit
             GrabUsedRight_mrse.Reset();
         }
 
+        public void StartThrust()
+        {
+            Thrust_mrse.Set();
+        }
+
+        public void StopThrust()
+        {
+            Thrust_mrse.Reset();
+        }
+
         public bool IsPlaying(String effect)
         {
             return bHaptics.IsPlaying(effect);
@@ -184,6 +208,7 @@ namespace MyBhapticsTactsuit
             StopHeartBeat();
             StopGrabUsedLeft();
             StopGrabUsedRight();
+            StopThrust();
         }
 
 
