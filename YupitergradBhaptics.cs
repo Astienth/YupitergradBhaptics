@@ -115,6 +115,7 @@ namespace YupitergradBhaptics
                 if (tactsuitVr.suitDisabled) return;
 
                 tactsuitVr.PlaybackHaptics("Death");
+                tactsuitVr.StopThreads();
             }
         }
     }
